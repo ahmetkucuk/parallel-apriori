@@ -40,6 +40,9 @@ class AprioriAlgorithm(
 //  }
 
   def createCandidateItemSet(itemSet: scala.collection.mutable.Set[TreeSet[String]]): scala.collection.mutable.Set[TreeSet[String]] = {
+
+
+    val t1 = System.currentTimeMillis()
     val candidateItemSet = scala.collection.mutable.Set[TreeSet[String]]()
     itemSet.foreach(s1 =>
       itemSet.foreach(s2 => {
@@ -49,6 +52,9 @@ class AprioriAlgorithm(
       }
       )
     )
+
+    val t2 = System.currentTimeMillis()
+    println(s"in Regular ${t2 - t1}")
     candidateItemSet
   }
 

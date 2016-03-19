@@ -20,6 +20,7 @@ class AprioriActor extends Actor {
 //  private var allFrequentItemSets = Set[TreeSet[String]]()
   var transactions: Set[Transaction] = Set()
   private var initialSender: Option[ActorRef] = None
+  var itemSize = 1
 
   override def receive: Receive =  {
     case StartApriori(transactions: Set[Transaction], support: Int) => {
@@ -43,7 +44,8 @@ class AprioriActor extends Actor {
       println(s"${itemSet.size}")
       if(itemSet.nonEmpty) {
 //        allFrequentItemSets = allFrequentItemSets ++ itemSet
-        lastFrequentItems = createCandidateItemSet(itemSet)
+        itemSize += 1
+        lastFrequentItems = createCandidateItemSet(itemSet, itemSize)
 
         if(lastFrequentItems.nonEmpty)
           context.actorOf(Props[FilterItemSetActor]) ! FilterItemSet(transactions, lastFrequentItems, support)
@@ -57,17 +59,14 @@ class AprioriActor extends Actor {
     }
     case _ => print("Message not recognized")
   }
-  def createCandidateItemSet(itemSet: Set[TreeSet[String]]): Set[TreeSet[String]] = {
-    var candidateItemSeq = Seq[TreeSet[String]]()
-    itemSet.foreach(s1 =>
-      itemSet.foreach(s2 => {
-        val unionOf = s1 | s2
-        if (s1.size + 1 == unionOf.size)
-          candidateItemSeq = candidateItemSeq :+ unionOf
-      }
-      )
-    )
-    candidateItemSeq.toSet
+  def createCandidateItemSet(itemSet: Set[TreeSet[String]], itemSize: Int): Set[TreeSet[String]] = {
+
+    val t1 = System.currentTimeMillis()
+    def crossProduct(set: Set[TreeSet[String]]): Set[TreeSet[String]] = for { x <- set; y <- set} yield  { x | y }
+    val result = crossProduct(itemSet).filter(s => s.size == itemSize)
+    val t2 = System.currentTimeMillis()
+    println(s"in Actor ${t2 - t1}")
+    result
   }
 
 }
