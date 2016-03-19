@@ -1,4 +1,3 @@
-import main.{Greet, Greeting, Greeter, WhoToGreet}
 import org.scalatest.{ BeforeAndAfterAll, FlatSpecLike, Matchers }
 import akka.actor.{ Actor, Props, ActorSystem }
 import akka.testkit.{ ImplicitSender, TestKit, TestActorRef }

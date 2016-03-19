@@ -10,7 +10,7 @@ import scala.collection.immutable.TreeSet
   * Created by ahmetkucuk on 17/03/16.
   */
 
-case class FilterItemSet(transactions: Seq[Transaction], itemSet: Set[TreeSet[String]], support: Int)
+case class FilterItemSet(transactions: Set[Transaction], itemSet: Set[TreeSet[String]], support: Int)
 case class FilteredItemSet(itemSet: Set[TreeSet[String]])
 
 class FilterItemSetActor extends Actor{
@@ -20,10 +20,10 @@ class FilterItemSetActor extends Actor{
 
   private var aprioriSender: Option[ActorRef] = None
   var support = 500
-  val frequentItems = scala.collection.mutable.Set[TreeSet[String]]()
+  var frequentItems = Seq[TreeSet[String]]()//scala.collection.mutable.Set[TreeSet[String]]()
   override def receive: Receive =  {
 
-    case FilterItemSet(transactions: Seq[Transaction], itemSet: Set[TreeSet[String]], support: Int) => {
+    case FilterItemSet(transactions: Set[Transaction], itemSet: Set[TreeSet[String]], support: Int) => {
       this.aprioriSender = Some(sender())
       this.numberOfItemSet = itemSet.size
       this.support = support
@@ -32,20 +32,20 @@ class FilterItemSetActor extends Actor{
 
     }
     case ItemCount(itemSet: TreeSet[String], numberOfItem: Int) => {
+
       numberOfProcessed += 1
       if(numberOfItem >= support) {
-        frequentItems += itemSet
+        frequentItems = frequentItems :+ itemSet
       }
       if (numberOfProcessed == numberOfItemSet) {
-        println("filter-item-set-actor-finished")
-        aprioriSender.get ! FilteredItemSet(frequentItems.map(m => m).toSet)
+        aprioriSender.get ! FilteredItemSet(frequentItems.toSet)
       }
     }
     case _ => print("filter-item-set-actor-Message not recognized")
   }
-  def doForEach(transaction: Seq[Transaction], frequentItems: Set[TreeSet[String]]): Unit = {
+  def doForEach(transactions: Set[Transaction], frequentItems: Set[TreeSet[String]]): Unit = {
     frequentItems.foreach( i =>
-      context.actorOf(Props[ItemCounterActor]) ! ItemCounter(transaction, i)
+      context.actorOf(Props(new ItemCounterActor(transactions))) ! ItemCounter(i)
     )
   }
 }

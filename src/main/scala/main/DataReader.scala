@@ -8,13 +8,13 @@ import scala.io.Source
   */
 class DataReader {
 
-  def getTransactions():Seq[Transaction] = {
+  def getTransactions():Set[Transaction] = {
     val filename = "/Users/ahmetkucuk/Documents/Developer/scala/parallel-apriori/src/main/resources/5000i.csv"
     var s = Seq[Transaction]()
     for (line <- Source.fromFile(filename).getLines()) {
-      val t = new Transaction(line.split(',').drop(1).to[TreeSet]);
-      s = s :+ t;
+      val t = new Transaction(line.split(',').drop(1).to[TreeSet])
+      s = s :+ t
     }
-    s
+    s.toSet
   }
 }

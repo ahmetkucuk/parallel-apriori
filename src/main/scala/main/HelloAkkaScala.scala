@@ -1,17 +1,23 @@
 package main
 
-import _root_.akka.actor.{Props, ActorSystem}
+import _root_.akka.actor
+import _root_.akka.actor.{ActorRef, Inbox, Props, ActorSystem}
+import _root_.akka.util.Timeout
 import main.akka.{StartApriori, AprioriActor}
 import main.regular.AprioriAlgorithm
+import scala.concurrent.duration._
 
 import scala.collection.immutable.TreeSet
+import scala.concurrent.{Future, Await}
 
 /**
   * Created by ahmetkucuk on 17/03/16.
   */
 object HelloAkkaScala extends App {
 
-  val test = new AprioriAlgorithm()
+  val minSupport = 700
+
+  val test = new AprioriAlgorithm(minSupport = minSupport)
 
   val t1 = new Transaction(TreeSet("M", "O", "N", "K", "E", "Y"))
   val t2 = new Transaction(TreeSet("D", "O", "N", "K", "E", "Y"))
@@ -20,43 +26,25 @@ object HelloAkkaScala extends App {
   val t5 = new Transaction(TreeSet("C", "O", "O", "K", "I", "E"))
 
   //test.analyze(scala.collection.mutable.Seq(t1, t2, t3, t4, t5));
-  test.analyze(new DataReader().getTransactions());
+  val transactions = new DataReader().getTransactions()
+  val time1: Long = java.lang.System.currentTimeMillis()
+  test.analyze(transactions)
+
 
   val system = ActorSystem("aprioriakka")
   val apriori = system.actorOf(Props[AprioriActor], "apriori")
-  val dataReader = new DataReader()
+  val inbox = Inbox.create(system)
 
-  apriori ! StartApriori(dataReader.getTransactions(), 20)
 
-  //
-  //  // Create the 'helloakka' actor system
-  //  val system = ActorSystem("helloakka")
-  //
-  //  // Create the 'greeter' actor
-  //  val greeter = system.actorOf(Props[Greeter], "greeter")
-  //
-  //  // Create an "actor-in-a-box"
-  //  val inbox = Inbox.create(system)
-  //
-  //  // Tell the 'greeter' to change its 'greeting' message
-  //  greeter.tell(WhoToGreet("akka"), ActorRef.noSender)
-  //
-  //  // Ask the 'greeter for the latest 'greeting'
-  //  // Reply should go to the "actor-in-a-box"
-  //  inbox.send(greeter, Greet)
-  //
-  //  // Wait 5 seconds for the reply with the 'greeting' message
-  //  val Greeting(message1) = inbox.receive(5.seconds)
-  //  println(s"Greeting: $message1")
-  //
-  //  // Change the greeting and ask for it again
-  //  greeter.tell(WhoToGreet("typesafe"), ActorRef.noSender)
-  //  inbox.send(greeter, Greet)
-  //  val Greeting(message2) = inbox.receive(5.seconds)
-  //  println(s"Greeting: $message2")
-  //
-  //  val greetPrinter = system.actorOf(Props[GreetPrinter])
-  //  // after zero seconds, send a Greet message every second to the greeter with a sender of the greetPrinter
-  //  system.scheduler.schedule(0.seconds, 1.second, greeter, Greet)(system.dispatcher, greetPrinter)
+  val time2: Long = java.lang.System.currentTimeMillis()
+  inbox.send(apriori, StartApriori(transactions, minSupport))
+  val message1 = inbox.receive(15000.seconds)
+  println(s"Greeting: $message1")
+  val time3: Long = java.lang.System.currentTimeMillis()
+
+  println(s"regular (${(time2 - time1)}) parallel ${(time3 - time2)}")
+
+  system.stop(apriori)
+  system.shutdown
 
 }

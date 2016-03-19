@@ -1,21 +1,20 @@
 package main.regular
 
 
-import main.{AnalysisResult, Transaction}
+import main.Transaction
 
 import scala.collection.immutable.TreeSet
 import scala.math.Ordering.String
 
 class AprioriAlgorithm(
-    minSupport: Int = 20,
+    minSupport: Int = 50,
     minConfidence: Double = 0.6,
     maxItemSetSize: Int = 5,
     isQuickRun: Boolean = true,
     maxJoinedSetsSizeWhenQuickRun: Int = 2000,
     timeoutMillis: Int = 60000) {
 
-  def analyze(transactions: Seq[Transaction]): AnalysisResult = {
-    val itemMap = scala.collection.mutable.HashMap[String, Int]()
+  def analyze(transactions: Set[Transaction]): Unit = {
     val itemSet = scala.collection.mutable.Set[TreeSet[String]]()
     transactions.foreach(t =>
 
@@ -34,8 +33,6 @@ class AprioriAlgorithm(
       frequentItemSet = filterBySupportCount(transactions, candidates, minSupport)
 
     }
-
-    new AnalysisResult(null, null)
   }
 
 //  def getFrequentItemSet(): Set[FrequentItemSet] = {
@@ -55,7 +52,7 @@ class AprioriAlgorithm(
     candidateItemSet
   }
 
-  def filterBySupportCount(transaction: Seq[Transaction], itemSet: scala.collection.mutable.Set[TreeSet[String]], support: Int): scala.collection.mutable.Set[TreeSet[String]] = {
+  def filterBySupportCount(transaction: Set[Transaction], itemSet: scala.collection.mutable.Set[TreeSet[String]], support: Int): scala.collection.mutable.Set[TreeSet[String]] = {
     val candidateItemSet = scala.collection.mutable.Set[TreeSet[String]]()
 
     itemSet.foreach(tSet => {

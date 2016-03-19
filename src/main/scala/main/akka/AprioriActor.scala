@@ -1,6 +1,6 @@
 package main.akka
 
-import akka.actor.{Props, Actor}
+import akka.actor.{ActorRef, Props, Actor}
 import akka.actor.Actor.Receive
 import main.Transaction
 
@@ -10,20 +10,22 @@ import scala.collection.immutable.TreeSet
   * Created by ahmetkucuk on 17/03/16.
   */
 
-case class StartApriori(transaction: Seq[Transaction], support: Int)
+case class StartApriori(transaction: Set[Transaction], support: Int)
 
 class AprioriActor extends Actor {
 
   private var support = 20
 
   private var lastFrequentItems = Set[TreeSet[String]]()
-  private var allFrequentItemSets = Set[TreeSet[String]]()
-  var transactions: Seq[Transaction] = Seq()
+//  private var allFrequentItemSets = Set[TreeSet[String]]()
+  var transactions: Set[Transaction] = Set()
+  private var initialSender: Option[ActorRef] = None
+
   override def receive: Receive =  {
-    case StartApriori(transactions: Seq[Transaction], support: Int) => {
-      val itemMap = scala.collection.mutable.HashMap[String, Int]()
+    case StartApriori(transactions: Set[Transaction], support: Int) => {
       this.transactions = transactions
       this.support = support
+      initialSender = Some(sender())
 
       var itemSet = Seq[TreeSet[String]]()
       transactions.foreach(t =>
@@ -32,26 +34,25 @@ class AprioriActor extends Actor {
 
       lastFrequentItems = itemSet.toSet
 
+      println(lastFrequentItems.size)
       context.actorOf(Props[FilterItemSetActor]) ! FilterItemSet(transactions, lastFrequentItems, support)
 
     }
     case FilteredItemSet(itemSet: Set[TreeSet[String]]) => {
 
-      println(s"filtered-item-set ${itemSet.size}")
+      println(s"${itemSet.size}")
       if(itemSet.nonEmpty) {
-        allFrequentItemSets = allFrequentItemSets ++ itemSet
+//        allFrequentItemSets = allFrequentItemSets ++ itemSet
         lastFrequentItems = createCandidateItemSet(itemSet)
 
         if(lastFrequentItems.nonEmpty)
           context.actorOf(Props[FilterItemSetActor]) ! FilterItemSet(transactions, lastFrequentItems, support)
         else {
-          println("self-stop")
-          context.stop(self)
-
+          initialSender.get ! "finished"
         }
       } else {
-        println(s"all frequent sets: (${allFrequentItemSets.size})")
-        context.stop(self)
+//        println(s"all frequent sets: (${allFrequentItemSets.size})")
+        initialSender.get ! "finished"
       }
     }
     case _ => print("Message not recognized")
