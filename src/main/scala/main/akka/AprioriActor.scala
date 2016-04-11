@@ -62,8 +62,19 @@ class AprioriActor extends Actor {
   def createCandidateItemSet(itemSet: Set[TreeSet[String]], itemSize: Int): Set[TreeSet[String]] = {
 
     val t1 = System.currentTimeMillis()
-    def crossProduct(set: Set[TreeSet[String]]): Set[TreeSet[String]] = for { x <- set; y <- set} yield  { x | y }
-    val result = crossProduct(itemSet).filter(s => s.size == itemSize)
+//    def crossProduct(set: Set[TreeSet[String]]): Set[TreeSet[String]] = for { x <- set; y <- set} yield  { x | y }
+//    val result = crossProduct(itemSet).filter(s => s.size == itemSize)
+
+    var result = Set[TreeSet[String]]()
+    itemSet.foreach(s1 =>
+      itemSet.foreach(s2 => {
+        val unionOf = s1 | s2
+        if (itemSize == unionOf.size)
+          result = result + unionOf
+      }
+      )
+    )
+
     val t2 = System.currentTimeMillis()
     println(s"in Actor ${t2 - t1}")
     result

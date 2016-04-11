@@ -15,7 +15,7 @@ import scala.concurrent.{Future, Await}
   */
 object HelloAkkaScala extends App {
 
-  val minSupport = 5
+  val minSupport = 3
 
   val test = new AprioriAlgorithm(minSupport = minSupport)
 

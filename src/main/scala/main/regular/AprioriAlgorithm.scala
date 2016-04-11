@@ -13,6 +13,7 @@ class AprioriAlgorithm(
     isQuickRun: Boolean = true,
     maxJoinedSetsSizeWhenQuickRun: Int = 2000,
     timeoutMillis: Int = 60000) {
+  var itemSize = 1
 
   def analyze(transactions: Set[Transaction]): Unit = {
     val itemSet = scala.collection.mutable.Set[TreeSet[String]]()
@@ -27,7 +28,8 @@ class AprioriAlgorithm(
 
     while(frequentItemSet.nonEmpty) {
 
-      val candidates = createCandidateItemSet(frequentItemSet)
+      itemSize += 1
+      val candidates = createCandidateItemSet(frequentItemSet, itemSize)
 
       println(frequentItemSet.size)
       frequentItemSet = filterBySupportCount(transactions, candidates, minSupport)
@@ -39,7 +41,7 @@ class AprioriAlgorithm(
 //    (new FrequentItemSet(, 0))
 //  }
 
-  def createCandidateItemSet(itemSet: scala.collection.mutable.Set[TreeSet[String]]): scala.collection.mutable.Set[TreeSet[String]] = {
+  def createCandidateItemSet(itemSet: scala.collection.mutable.Set[TreeSet[String]], itemSize: Int): scala.collection.mutable.Set[TreeSet[String]] = {
 
 
     val t1 = System.currentTimeMillis()
@@ -47,7 +49,7 @@ class AprioriAlgorithm(
     itemSet.foreach(s1 =>
       itemSet.foreach(s2 => {
         val unionOf = s1 | s2
-        if (s1.size + 1 == unionOf.size)
+        if (itemSize == unionOf.size)
           candidateItemSet += unionOf
       }
       )
