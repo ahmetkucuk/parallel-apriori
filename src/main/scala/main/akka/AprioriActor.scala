@@ -14,7 +14,7 @@ case class StartApriori(transaction: Set[Transaction], support: Int)
 
 class AprioriActor extends Actor {
 
-  private var support = 20
+  private var support = 0;
 
   private var lastFrequentItems = Set[TreeSet[String]]()
 //  private var allFrequentItemSets = Set[TreeSet[String]]()
