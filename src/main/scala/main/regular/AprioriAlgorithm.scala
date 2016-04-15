@@ -1,18 +1,12 @@
 package main.regular
 
 
-import main.Transaction
+import main.{DataReader, Transaction}
 
 import scala.collection.immutable.TreeSet
 import scala.math.Ordering.String
 
-class AprioriAlgorithm(
-    minSupport: Int = 50,
-    minConfidence: Double = 0.6,
-    maxItemSetSize: Int = 5,
-    isQuickRun: Boolean = true,
-    maxJoinedSetsSizeWhenQuickRun: Int = 2000,
-    timeoutMillis: Int = 60000) {
+class AprioriAlgorithm(minSupport: Int = 20) {
   var itemSize = 1
 
   def analyze(transactions: Set[Transaction]): Unit = {
@@ -44,7 +38,6 @@ class AprioriAlgorithm(
   def createCandidateItemSet(itemSet: scala.collection.mutable.Set[TreeSet[String]], itemSize: Int): scala.collection.mutable.Set[TreeSet[String]] = {
 
 
-    val t1 = System.currentTimeMillis()
     val candidateItemSet = scala.collection.mutable.Set[TreeSet[String]]()
     itemSet.foreach(s1 =>
       itemSet.foreach(s2 => {
@@ -55,8 +48,6 @@ class AprioriAlgorithm(
       )
     )
 
-    val t2 = System.currentTimeMillis()
-    println(s"in Regular ${t2 - t1}")
     candidateItemSet
   }
 
@@ -77,4 +68,19 @@ class AprioriAlgorithm(
     candidateItemSet
   }
 
+}
+
+object AprioriRegularApp {
+  def main(args: Array[String]): Unit = {
+    val minSupport = 20
+
+    val test = new AprioriAlgorithm(minSupport = minSupport)
+
+    //test.analyze(scala.collection.mutable.Seq(t1, t2, t3, t4, t5));
+    val transactions = new DataReader().getTransactions()
+    val time1: Long = java.lang.System.currentTimeMillis()
+    test.analyze(transactions)
+    val time2: Long = java.lang.System.currentTimeMillis()
+    println(s"regular (${(time2 - time1)})")
+  }
 }
