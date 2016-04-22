@@ -9,6 +9,8 @@ import scala.collection.immutable.TreeSet
 object AprioriSparkApp {
 
   private val minSupport = 20
+  private var conversionTime = 0.0
+  private var totalTime = 0.0
 
   def main(args: Array[String]) {
 
@@ -23,10 +25,6 @@ object AprioriSparkApp {
     val transactions: RDD[TreeSet[String]] = logData.map(line => {
       val array = line.split(',')
       collection.immutable.TreeSet[String]() ++ array.slice(1, array.length).map(_.trim)
-    })
-
-    transactions.reduce((a,b) => {
-      a | b
     })
 
     var itemSet = Set[TreeSet[String]]()
@@ -50,14 +48,15 @@ object AprioriSparkApp {
 
     }
     val time2: Long = java.lang.System.currentTimeMillis()
-    println(s"spark (${(time2 - time1)})")
+    totalTime = time2 - time1
+    println(s"spark (${(totalTime - conversionTime)})")
     println("finished")
   }
 
   def filterItemSet(transactions: RDD[TreeSet[String]], candidateItemSet: Broadcast[Set[TreeSet[String]]], supportCount: Int): Set[TreeSet[String]] = {
 
     //Map Reduce step of Spark
-    transactions.flatMap(t => {
+    val result = transactions.flatMap(t => {
       candidateItemSet.value.map(cItem => {
         if (cItem.subsetOf(t)) {
           (cItem, 1)
@@ -65,13 +64,14 @@ object AprioriSparkApp {
           (cItem, 0)
         }
       })
-    }).reduceByKey(_+_).filter(_._2>=supportCount).map { case (itemset, _) => itemset }.toArray().toSet
+    }).reduceByKey(_+_).filter(_._2>=supportCount).map { case (itemset, _) => itemset }
 //
-//    val time1: Long = java.lang.System.currentTimeMillis()
-//    val resultSet = result.flatMap(x=>x)
-//    val time2: Long = java.lang.System.currentTimeMillis()
-//    println(s"spark (${(time2 - time1)})")
-//    resultSet
+    val time1: Long = java.lang.System.currentTimeMillis()
+    val resultSet = result.collect().toSet
+    val time2: Long = java.lang.System.currentTimeMillis()
+    conversionTime += (time2 - time1)
+    println(s"conversion Time (${(time2 - time1)})")
+    resultSet
   }
 
   //Subset check(if subset frequent is not done yet
