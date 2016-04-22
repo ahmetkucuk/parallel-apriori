@@ -72,12 +72,18 @@ class AprioriAlgorithm(minSupport: Int = 20) {
 
 object AprioriRegularApp {
   def main(args: Array[String]): Unit = {
-    val minSupport = 20
+
+    if(args.length < 2){
+      println("There is no enough input args 0 -> filename, args 1 -> minSupport")
+    }
+
+    val filename = args(0)
+    val minSupport = Integer.parseInt(args(1))
 
     val test = new AprioriAlgorithm(minSupport = minSupport)
 
     //test.analyze(scala.collection.mutable.Seq(t1, t2, t3, t4, t5));
-    val transactions = new DataReader().getTransactions()
+    val transactions = new DataReader().getTransactions(filename)
     val time1: Long = java.lang.System.currentTimeMillis()
     test.analyze(transactions)
     val time2: Long = java.lang.System.currentTimeMillis()

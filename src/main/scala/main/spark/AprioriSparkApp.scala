@@ -8,13 +8,20 @@ import scala.collection.immutable.TreeSet
 
 object AprioriSparkApp {
 
-  private val minSupport = 20
   private var conversionTime = 0.0
   private var totalTime = 0.0
 
   def main(args: Array[String]) {
 
-    val filename = "/Users/ahmetkucuk/Documents/Developer/scala/parallel-apriori/src/main/resources/5000i.csv"
+//    val filename = "/Users/ahmetkucuk/Documents/Developer/scala/parallel-apriori/src/main/resources/5000i.csv"
+    if(args.length < 2){
+      println("There is no enough input args 0 -> filename, args 1 -> minSupport")
+    }
+
+    val filename = args(0)
+    val minSupport = Integer.parseInt(args(1))
+
+
     val conf = new SparkConf()
       .setMaster("local[2]")
       .setAppName("Simple App")
