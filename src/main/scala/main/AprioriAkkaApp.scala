@@ -3,6 +3,7 @@ package main
 import _root_.akka.actor
 import _root_.akka.actor.{ActorRef, Inbox, Props, ActorSystem}
 import _root_.akka.util.Timeout
+import com.typesafe.config.ConfigFactory
 import main.akka.{StartApriori, AprioriActor}
 import main.regular.AprioriAlgorithm
 import scala.concurrent.duration._
@@ -27,7 +28,8 @@ object AprioriAkkaApp {
 
     val transactions = new DataReader().getTransactions(filename)
 
-    val system = ActorSystem("aprioriakka")
+    val conf = ConfigFactory.load()
+    val system = ActorSystem("aprioriakka", conf.getConfig("server-thread-pool-dispatcher"))
     val apriori = system.actorOf(Props[AprioriActor], "apriori")
     val inbox = Inbox.create(system)
 
