@@ -4,7 +4,7 @@ import akka.actor.{ActorRef, Props, Actor}
 import akka.actor.Actor.Receive
 import main.Transaction
 
-import scala.collection.immutable.TreeSet
+import scala.collection.immutable.{HashMap, TreeSet}
 
 /**
   * Created by ahmetkucuk on 17/03/16.
@@ -65,14 +65,30 @@ class AprioriActor extends Actor {
 //    def crossProduct(set: Set[TreeSet[String]]): Set[TreeSet[String]] = for { x <- set; y <- set} yield  { x | y }
 //    val result = crossProduct(itemSet).filter(s => s.size == itemSize)
 
-    var result = Set[TreeSet[String]]()
+    val counterMap = scala.collection.mutable.HashMap[TreeSet[String], Int]()
+
     itemSet.foreach(s1 =>
       itemSet.foreach(s2 => {
         val unionOf = s1 | s2
-        if (itemSize == unionOf.size)
-          result = result + unionOf
+        if (unionOf.size == itemSize)
+          counterMap.put(unionOf, counterMap.getOrElse(unionOf,0) + 1)
+
       }
       )
+    )
+
+//    println(counterMap)
+
+    val shouldOccur = itemSize*(itemSize-1)
+    var result = Set[TreeSet[String]]()
+    counterMap.foreach( {
+      case (setOfItem, count) => {
+        if(count == shouldOccur) {
+          result = result + setOfItem
+
+        }
+      }
+    }
     )
 
     val t2 = System.currentTimeMillis()
