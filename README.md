@@ -1,9 +1,13 @@
-Go Reactive Activator
+Spark implementation of well-known apriori algorithm
 =====================
 
-The motivation: [Go Reactive Activator Contest: Scala Days Edition](http://typesafe.com/blog/go-reactive-activator-contest-scala-days-edition)
+This is a course project for parallel-algorithm class at GSU.
 
-### Open questions
-* What is Apache Spark? What are Spark components?
-* What is Typesafe Activator? How to create one?
-* What are the use cases for Spark and Scala?
+Apriori algorithm is used for frequent item-set mining, pattern mining etc. 
+
+A Spark implementation and sequential implementation of the algorithm also included for comparison. 
+
+Two different market item datasets are used for tests. 
+
+Eventhough conversion between RDD to native scala data structure creates some overhead, algorithms achieve speed up. 
+
